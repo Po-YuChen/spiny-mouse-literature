@@ -50,13 +50,44 @@ year_values = sorted(
 
 
 # -----------------------------
+# Helper: update all checkbox states
+# -----------------------------
+
+def set_filter_state(
+    options,
+    key_prefix,
+    value,
+):
+    for i in range(len(options)):
+        st.session_state[
+            f"{key_prefix}_{i}"
+        ] = value
+
+
+# -----------------------------
 # Helper: popover checkbox filter
 # -----------------------------
 
-def popover_filter(label, options, key_prefix):
-    selected = []
+def popover_filter(
+    label,
+    options,
+    key_prefix,
+):
 
-    # Count selected options from session state
+    # Default behavior = Select all
+    for i in range(len(options)):
+
+        checkbox_key = (
+            f"{key_prefix}_{i}"
+        )
+
+        if checkbox_key not in st.session_state:
+            st.session_state[
+                checkbox_key
+            ] = True
+
+
+    # Count currently selected options
     selected_count = sum(
         1
         for i in range(len(options))
@@ -66,20 +97,53 @@ def popover_filter(label, options, key_prefix):
         )
     )
 
-    # Show selection count in button label
+
+    # Always show selection count
     button_label = (
         f"{label} ({selected_count})"
-        if selected_count > 0
-        else label
     )
 
-    # Popover
+
+    selected = []
+
+
     with st.popover(
         button_label,
         use_container_width=True,
     ):
 
-        st.markdown(f"**Select {label}**")
+        st.markdown(
+            f"**Select {label}**"
+        )
+
+        action_cols = st.columns(2)
+
+        action_cols[0].button(
+            "Select all",
+            key=f"{key_prefix}_select_all",
+            use_container_width=True,
+            on_click=set_filter_state,
+            args=(
+                options,
+                key_prefix,
+                True,
+            ),
+        )
+
+        action_cols[1].button(
+            "Select none",
+            key=f"{key_prefix}_select_none",
+            use_container_width=True,
+            on_click=set_filter_state,
+            args=(
+                options,
+                key_prefix,
+                False,
+            ),
+        )
+
+        st.divider()
+
 
         for i, option in enumerate(options):
 
@@ -90,6 +154,15 @@ def popover_filter(label, options, key_prefix):
 
             if checked:
                 selected.append(option)
+
+
+    # Important:
+    # filter_literature may treat [] as "no filter".
+    # This placeholder ensures Select none returns zero matches.
+    if not selected:
+        return [
+            "__SELECT_NONE__"
+        ]
 
     return selected
 
@@ -109,7 +182,9 @@ with st.expander(
 
     st.markdown("**Year**")
 
-    year_row = st.columns([1, 1, 4])
+    year_row = st.columns(
+        [1, 1, 4]
+    )
 
     year_from = year_row[0].selectbox(
         "From",
@@ -145,6 +220,7 @@ with st.expander(
             "topic",
         )
 
+
     with r1[1]:
 
         species = popover_filter(
@@ -159,6 +235,7 @@ with st.expander(
             ),
             "species",
         )
+
 
     with r1[2]:
 
@@ -197,6 +274,7 @@ with st.expander(
             "disease",
         )
 
+
     with r2[1]:
 
         omics = popover_filter(
@@ -212,6 +290,7 @@ with st.expander(
             "omics",
         )
 
+
     with r2[2]:
 
         article_types = popover_filter(
@@ -223,6 +302,7 @@ with st.expander(
             ),
             "article_type",
         )
+
 
     with r2[3]:
 
@@ -250,7 +330,9 @@ if year_from <= year_to:
 
 else:
 
-    years = []
+    years = [
+        "__SELECT_NONE__"
+    ]
 
 
 # -----------------------------
