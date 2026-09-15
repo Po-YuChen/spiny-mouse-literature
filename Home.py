@@ -69,20 +69,25 @@ st.divider()
 
 st.subheader("Search the literature")
 
-home_query = st.text_input(
-    "Search literature",
-    placeholder=(
-        "e.g. kidney regeneration, macrophage, "
-        "scRNA-seq, fibrosis"
-    ),
-    key="home_search",
-    label_visibility="collapsed",
-)
+with st.form("home_search_form"):
 
-if st.button(
-    "Search literature",
-    type="primary",
-):
+    home_query = st.text_input(
+        "Search literature",
+        placeholder=(
+            "e.g. kidney regeneration, macrophage, "
+            "scRNA-seq, fibrosis"
+        ),
+        key="home_search",
+        label_visibility="collapsed",
+    )
+
+    submitted = st.form_submit_button(
+        "Search",
+        type="primary",
+    )
+
+if submitted:
+
     if home_query.strip():
 
         st.session_state[
@@ -94,6 +99,7 @@ if st.button(
         )
 
     else:
+
         st.warning(
             "Please enter a keyword before searching."
         )
