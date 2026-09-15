@@ -50,7 +50,7 @@ year_values = sorted(
 
 
 # -----------------------------
-# Helper: update all checkbox states
+# Helper: update checkbox states
 # -----------------------------
 
 def set_filter_state(
@@ -60,7 +60,7 @@ def set_filter_state(
 ):
     for i in range(len(options)):
         st.session_state[
-            f"{key_prefix}_{i}"
+            f"litfilter_v2_{key_prefix}_{i}"
         ] = value
 
 
@@ -74,11 +74,11 @@ def popover_filter(
     key_prefix,
 ):
 
-    # Default behavior = Select all
+    # Default = Select all
     for i in range(len(options)):
 
         checkbox_key = (
-            f"{key_prefix}_{i}"
+            f"litfilter_v2_{key_prefix}_{i}"
         )
 
         if checkbox_key not in st.session_state:
@@ -92,13 +92,13 @@ def popover_filter(
         1
         for i in range(len(options))
         if st.session_state.get(
-            f"{key_prefix}_{i}",
-            False,
+            f"litfilter_v2_{key_prefix}_{i}",
+            True,
         )
     )
 
 
-    # Always show selection count
+    # Show selected count in button
     button_label = (
         f"{label} ({selected_count})"
     )
@@ -112,15 +112,11 @@ def popover_filter(
         use_container_width=True,
     ):
 
-        st.markdown(
-            f"**Select {label}**"
-        )
-
         action_cols = st.columns(2)
 
         action_cols[0].button(
             "Select all",
-            key=f"{key_prefix}_select_all",
+            key=f"litfilter_v2_{key_prefix}_select_all",
             use_container_width=True,
             on_click=set_filter_state,
             args=(
@@ -132,7 +128,7 @@ def popover_filter(
 
         action_cols[1].button(
             "Select none",
-            key=f"{key_prefix}_select_none",
+            key=f"litfilter_v2_{key_prefix}_select_none",
             use_container_width=True,
             on_click=set_filter_state,
             args=(
@@ -149,21 +145,22 @@ def popover_filter(
 
             checked = st.checkbox(
                 option,
-                key=f"{key_prefix}_{i}",
+                key=f"litfilter_v2_{key_prefix}_{i}",
             )
 
             if checked:
                 selected.append(option)
 
 
-    # Important:
-    # filter_literature may treat [] as "no filter".
-    # This placeholder ensures Select none returns zero matches.
-    if not selected:
-        return [
-            "__SELECT_NONE__"
-        ]
+    # Explicit Select none
+    if len(selected) == 0:
+        return None
 
+    # Select all = do not restrict this filter
+    if len(selected) == len(options):
+        return []
+
+    # Partial selection
     return selected
 
 
@@ -330,28 +327,51 @@ if year_from <= year_to:
 
 else:
 
-    years = [
-        "__SELECT_NONE__"
-    ]
+    years = []
 
 
 # -----------------------------
 # Apply search + filters
 # -----------------------------
 
-res = filter_literature(
-    lit,
-    q,
-    years,
+categorical_filters = [
     topics,
     species,
     organs,
     disease,
     omics,
     article_types,
-    has_dataset,
-)
+]
 
+
+# If any category is explicitly Select none,
+# return zero publications.
+if any(
+    value is None
+    for value in categorical_filters
+):
+
+    res = lit.iloc[0:0].copy()
+
+else:
+
+    res = filter_literature(
+        lit,
+        q,
+        years,
+        topics,
+        species,
+        organs,
+        disease,
+        omics,
+        article_types,
+        has_dataset,
+    )
+
+
+# -----------------------------
+# Result count
+# -----------------------------
 
 st.write(
     f"**{len(res):,} publications found**"
