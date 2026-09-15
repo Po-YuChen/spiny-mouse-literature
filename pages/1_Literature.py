@@ -56,17 +56,47 @@ year_values = sorted(
 def popover_filter(label, options, key_prefix):
     selected = []
 
-    with st.popover(label, use_container_width=True):
+    # Count selected options from session state
+    selected_count = sum(
+        1
+        for i in range(len(options))
+        if st.session_state.get(
+            f"{key_prefix}_{i}",
+            False,
+        )
+    )
+
+    # Show selection count in button label
+    button_label = (
+        f"{label} ({selected_count})"
+        if selected_count > 0
+        else label
+    )
+
+    # Popover
+    with st.popover(
+        button_label,
+        use_container_width=True,
+    ):
 
         st.markdown(f"**Select {label}**")
 
         for i, option in enumerate(options):
 
-            if st.checkbox(
+            checked = st.checkbox(
                 option,
                 key=f"{key_prefix}_{i}",
-            ):
+            )
+
+            if checked:
                 selected.append(option)
+
+    # Show selected options below button
+    if selected:
+        st.caption(
+            "Selected: "
+            + ", ".join(selected)
+        )
 
     return selected
 
