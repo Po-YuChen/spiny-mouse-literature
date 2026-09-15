@@ -251,10 +251,10 @@ with st.expander(
 
 
     # -----------------------------
-    # Disease / Omics / Article type / Dataset
+    # Disease / Omics / Article type
     # -----------------------------
 
-    r2 = st.columns(4)
+    r2 = st.columns(3)
 
     with r2[0]:
 
@@ -301,16 +301,18 @@ with st.expander(
         )
 
 
-    with r2[3]:
+    # -----------------------------
+    # Public dataset
+    # -----------------------------
 
-        st.markdown(
-            "<div style='height: 8px;'></div>",
-            unsafe_allow_html=True,
-        )
+    st.markdown(
+        "<div style='height: 4px;'></div>",
+        unsafe_allow_html=True,
+    )
 
-        has_dataset = st.toggle(
-            "Has public dataset"
-        )
+    has_dataset = st.toggle(
+        "Has public dataset"
+    )
 
 
 # -----------------------------
