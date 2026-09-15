@@ -1,6 +1,5 @@
 import html
 import json
-import re
 
 import pandas as pd
 import requests
@@ -12,6 +11,7 @@ API_BASE_URL = (
     "AKfycbwsEhpib0ZP7PaNXv6oucfYCqQN1HlgorIN2BIxF633_-SGVJ14ht8902tvQm_y3fGn"
     "/exec"
 )
+
 
 TABLES_TO_LOAD = [
     "Literature",
@@ -26,46 +26,44 @@ TABLES_TO_LOAD = [
 
 
 def _parse_response(response):
-    text = response.text.strip()
 
-    # Case 1: normal JSON
+    # First try normal JSON
     try:
         return response.json()
     except Exception:
         pass
 
-    # Case 2: HtmlService wraps JSON inside HTML
-    body_match = re.search(
-        r"<body[^>]*>(.*?)</body>",
-        text,
-        flags=re.IGNORECASE | re.DOTALL,
-    )
+    # HtmlService may encode JSON as HTML text
+    text = html.unescape(response.text)
 
-    if body_match:
-        text = body_match.group(1)
+    # Look specifically for our API JSON object
+    start = text.find('{"ok":')
 
-    # Remove remaining HTML tags if present
-    text = re.sub(r"<[^>]+>", "", text)
-
-    # Decode HTML entities
-    text = html.unescape(text).strip()
-
-    # Find JSON object boundaries
-    start = text.find("{")
-    end = text.rfind("}")
-
-    if start == -1 or end == -1:
+    if start == -1:
         raise RuntimeError(
-            "Apps Script returned a response, but no JSON object was found. "
-            f"First 300 characters: {response.text[:300]}"
+            "Apps Script returned content, but the API JSON "
+            "could not be located. "
+            f"First 500 characters: {response.text[:500]}"
         )
 
-    json_text = text[start:end + 1]
+    # Parse exactly one JSON object.
+    # This safely ignores any HTML / JavaScript after it.
+    decoder = json.JSONDecoder()
 
-    return json.loads(json_text)
+    try:
+        payload, _ = decoder.raw_decode(text[start:])
+        return payload
+
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            "Apps Script response contained API JSON, "
+            f"but it could not be decoded: {exc}. "
+            f"Response around JSON: {text[start:start+500]}"
+        )
 
 
 def _fetch_table(table_name: str) -> pd.DataFrame:
+
     response = requests.get(
         API_BASE_URL,
         params={"table": table_name},
@@ -92,6 +90,7 @@ def _fetch_table(table_name: str) -> pd.DataFrame:
     show_spinner="Loading literature database…",
 )
 def load_google_sheets():
+
     data = {}
 
     for table in TABLES_TO_LOAD:
@@ -101,6 +100,7 @@ def load_google_sheets():
 
 
 def api_healthcheck():
+
     response = requests.get(
         API_BASE_URL,
         params={"table": "Literature"},
