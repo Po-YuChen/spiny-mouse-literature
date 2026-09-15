@@ -58,28 +58,34 @@ with st.expander(
     expanded=True,
 ):
 
-    r1 = st.columns(4)
+    # -----------------------------
+    # Year
+    # -----------------------------
 
-    # Year range
-    with r1[0]:
+    st.markdown("**Year**")
 
-        st.markdown("**Year**")
+    year_row = st.columns([1, 1, 4])
 
-        year_cols = st.columns(2)
+    year_from = year_row[0].selectbox(
+        "From",
+        year_values,
+        index=0,
+    )
 
-        year_from = year_cols[0].selectbox(
-            "From",
-            year_values,
-            index=0,
-        )
+    year_to = year_row[1].selectbox(
+        "To",
+        year_values,
+        index=len(year_values) - 1,
+    )
 
-        year_to = year_cols[1].selectbox(
-            "To",
-            year_values,
-            index=len(year_values) - 1,
-        )
 
-    topics = r1[1].multiselect(
+    # -----------------------------
+    # Topic / Species / Organ
+    # -----------------------------
+
+    r1 = st.columns(3)
+
+    topics = r1[0].multiselect(
         "Topic",
         sorted(
             set(
@@ -91,7 +97,7 @@ with st.expander(
         ),
     )
 
-    species = r1[2].multiselect(
+    species = r1[1].multiselect(
         "Species",
         sorted(
             set(
@@ -103,7 +109,7 @@ with st.expander(
         ),
     )
 
-    organs = r1[3].multiselect(
+    organs = r1[2].multiselect(
         "Organ",
         sorted(
             set(
@@ -115,6 +121,10 @@ with st.expander(
         ),
     )
 
+
+    # -----------------------------
+    # Disease / Omics / Article type / Dataset
+    # -----------------------------
 
     r2 = st.columns(4)
 
@@ -151,9 +161,16 @@ with st.expander(
         ),
     )
 
-    has_dataset = r2[3].toggle(
-        "Has public dataset"
-    )
+    with r2[3]:
+
+        st.markdown(
+            "<div style='height: 28px;'></div>",
+            unsafe_allow_html=True,
+        )
+
+        has_dataset = st.toggle(
+            "Has public dataset"
+        )
 
 
 # -----------------------------
