@@ -50,6 +50,28 @@ year_values = sorted(
 
 
 # -----------------------------
+# Helper: popover checkbox filter
+# -----------------------------
+
+def popover_filter(label, options, key_prefix):
+    selected = []
+
+    with st.popover(label, use_container_width=True):
+
+        st.markdown(f"**Select {label}**")
+
+        for i, option in enumerate(options):
+
+            if st.checkbox(
+                option,
+                key=f"{key_prefix}_{i}",
+            ):
+                selected.append(option)
+
+    return selected
+
+
+# -----------------------------
 # Filters
 # -----------------------------
 
@@ -85,41 +107,50 @@ with st.expander(
 
     r1 = st.columns(3)
 
-    topics = r1[0].multiselect(
-        "Topic",
-        sorted(
-            set(
-                sum(
-                    lit["_topics"].tolist(),
-                    [],
-                )
-            )
-        ),
-    )
+    with r1[0]:
 
-    species = r1[1].multiselect(
-        "Species",
-        sorted(
-            set(
-                sum(
-                    lit["_species"].tolist(),
-                    [],
+        topics = popover_filter(
+            "Topic",
+            sorted(
+                set(
+                    sum(
+                        lit["_topics"].tolist(),
+                        [],
+                    )
                 )
-            )
-        ),
-    )
+            ),
+            "topic",
+        )
 
-    organs = r1[2].multiselect(
-        "Organ",
-        sorted(
-            set(
-                sum(
-                    lit["_organs"].tolist(),
-                    [],
+    with r1[1]:
+
+        species = popover_filter(
+            "Species",
+            sorted(
+                set(
+                    sum(
+                        lit["_species"].tolist(),
+                        [],
+                    )
                 )
-            )
-        ),
-    )
+            ),
+            "species",
+        )
+
+    with r1[2]:
+
+        organs = popover_filter(
+            "Organ",
+            sorted(
+                set(
+                    sum(
+                        lit["_organs"].tolist(),
+                        [],
+                    )
+                )
+            ),
+            "organ",
+        )
 
 
     # -----------------------------
@@ -128,43 +159,52 @@ with st.expander(
 
     r2 = st.columns(4)
 
-    disease = r2[0].multiselect(
-        "Disease model",
-        sorted(
-            set(
-                sum(
-                    lit["_disease_models"].tolist(),
-                    [],
-                )
-            )
-        ),
-    )
+    with r2[0]:
 
-    omics = r2[1].multiselect(
-        "Omics",
-        sorted(
-            set(
-                sum(
-                    lit["_omics"].tolist(),
-                    [],
+        disease = popover_filter(
+            "Disease model",
+            sorted(
+                set(
+                    sum(
+                        lit["_disease_models"].tolist(),
+                        [],
+                    )
                 )
-            )
-        ),
-    )
+            ),
+            "disease",
+        )
 
-    article_types = r2[2].multiselect(
-        "Article type",
-        sorted(
-            lit["Article_Type"]
-            .dropna()
-            .unique()
-        ),
-    )
+    with r2[1]:
+
+        omics = popover_filter(
+            "Omics",
+            sorted(
+                set(
+                    sum(
+                        lit["_omics"].tolist(),
+                        [],
+                    )
+                )
+            ),
+            "omics",
+        )
+
+    with r2[2]:
+
+        article_types = popover_filter(
+            "Article type",
+            sorted(
+                lit["Article_Type"]
+                .dropna()
+                .unique()
+            ),
+            "article_type",
+        )
 
     with r2[3]:
 
         st.markdown(
-            "<div style='height: 28px;'></div>",
+            "<div style='height: 8px;'></div>",
             unsafe_allow_html=True,
         )
 
