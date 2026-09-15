@@ -26,11 +26,39 @@ lit = enrich_literature(data)
 # Search
 # -----------------------------
 
-q = st.text_input(
-    "Search literature",
-    placeholder="e.g. kidney regeneration, macrophage, scRNA-seq",
-    key="literature_query",
+if "literature_query" not in st.session_state:
+    st.session_state["literature_query"] = ""
+
+
+def clear_literature_search():
+    st.session_state["literature_query"] = ""
+
+
+search_row = st.columns(
+    [0.38, 12],
+    gap=None,
 )
+
+
+with search_row[0]:
+
+    st.button(
+        "×",
+        key="literature_clear",
+        help="Clear search",
+        on_click=clear_literature_search,
+        use_container_width=True,
+    )
+
+
+with search_row[1]:
+
+    q = st.text_input(
+        "Search literature",
+        placeholder="e.g. kidney regeneration, macrophage, scRNA-seq",
+        key="literature_query",
+        label_visibility="collapsed",
+    )
 
 
 # -----------------------------
