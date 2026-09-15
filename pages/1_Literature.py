@@ -91,13 +91,6 @@ def popover_filter(label, options, key_prefix):
             if checked:
                 selected.append(option)
 
-    # Show selected options below button
-    if selected:
-        st.caption(
-            "Selected: "
-            + ", ".join(selected)
-        )
-
     return selected
 
 
