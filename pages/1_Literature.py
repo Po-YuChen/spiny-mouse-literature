@@ -34,6 +34,22 @@ q = st.text_input(
 
 
 # -----------------------------
+# Prepare year range
+# -----------------------------
+
+year_values = sorted(
+    [
+        int(y)
+        for y in lit["Year"]
+        .dropna()
+        .astype(str)
+        .unique()
+        if str(y).isdigit()
+    ]
+)
+
+
+# -----------------------------
 # Filters
 # -----------------------------
 
@@ -44,15 +60,24 @@ with st.expander(
 
     r1 = st.columns(4)
 
-    years = r1[0].multiselect(
-        "Year",
-        sorted(
-            lit["Year"]
-            .astype(str)
-            .unique(),
-            reverse=True,
-        ),
-    )
+    # Year range
+    with r1[0]:
+
+        st.markdown("**Year**")
+
+        year_cols = st.columns(2)
+
+        year_from = year_cols[0].selectbox(
+            "From",
+            year_values,
+            index=0,
+        )
+
+        year_to = year_cols[1].selectbox(
+            "To",
+            year_values,
+            index=len(year_values) - 1,
+        )
 
     topics = r1[1].multiselect(
         "Topic",
@@ -129,6 +154,23 @@ with st.expander(
     has_dataset = r2[3].toggle(
         "Has public dataset"
     )
+
+
+# -----------------------------
+# Convert year range to year list
+# -----------------------------
+
+if year_from <= year_to:
+
+    years = [
+        str(y)
+        for y in year_values
+        if year_from <= y <= year_to
+    ]
+
+else:
+
+    years = []
 
 
 # -----------------------------
