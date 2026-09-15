@@ -1,3 +1,72 @@
+import streamlit as st
+
+from utils.google_sheets import load_google_sheets
+from utils.database import enrich_literature
+
+
+st.set_page_config(
+    page_title="Spiny Mouse Literature Database",
+    page_icon="🐭",
+    layout="wide",
+)
+
+st.title("Spiny Mouse Literature Database")
+
+st.caption(
+    "A curated resource for Acomys research, disease models, "
+    "regeneration, and public omics datasets."
+)
+
+
+# -----------------------------
+# Load database
+# -----------------------------
+
+try:
+    data = load_google_sheets()
+    lit = enrich_literature(data)
+
+except Exception as e:
+    st.error(
+        "The website could not load the public literature database."
+    )
+    st.code(str(e))
+    st.info(
+        "Please check the public Google Sheet connection."
+    )
+    st.stop()
+
+
+# -----------------------------
+# Database overview
+# -----------------------------
+
+a, b, c, d = st.columns(4)
+
+a.metric(
+    "Publications",
+    f"{len(lit):,}",
+)
+
+b.metric(
+    "Research Topics",
+    f"{len(set(sum(lit['_topics'].tolist(), []))):,}",
+)
+
+c.metric(
+    "Omics Studies",
+    f"{int(lit['_omics'].map(bool).sum()):,}",
+)
+
+d.metric(
+    "Public Dataset Accessions",
+    f"{len(data['Datasets']):,}",
+)
+
+
+st.divider()
+
+
 # -----------------------------
 # Quick literature search
 # -----------------------------
@@ -10,19 +79,24 @@ if "home_search" not in st.session_state:
     st.session_state["home_search"] = ""
 
 
+# Clear search callback
 def clear_home_search():
     st.session_state["home_search"] = ""
 
 
-with st.form("home_search_form"):
+# Search input + clear button
+search_row = st.columns(
+    [20, 0.65],
+    gap="small",
+)
 
-    search_row = st.columns(
-        [12, 0.45],
-        gap="small",
-    )
 
-    # Search input
-    with search_row[0]:
+# Search box
+with search_row[0]:
+
+    with st.form(
+        "home_search_form"
+    ):
 
         home_query = st.text_input(
             "Search literature",
@@ -34,29 +108,28 @@ with st.form("home_search_form"):
             label_visibility="collapsed",
         )
 
-    # Clear button
-    with search_row[1]:
-
-        clear_clicked = st.form_submit_button(
-            "×",
-            help="Clear search",
+        submitted = st.form_submit_button(
+            "Search",
+            type="primary",
         )
 
-    submitted = st.form_submit_button(
-        "Search",
-        type="primary",
+
+# Small clear button on the right
+with search_row[1]:
+
+    st.button(
+        "×",
+        key="home_clear",
+        help="Clear search",
+        on_click=clear_home_search,
+        use_container_width=True,
     )
 
 
-# Clear search
-if clear_clicked:
+# -----------------------------
+# Handle search
+# -----------------------------
 
-    st.session_state["home_search"] = ""
-
-    st.rerun()
-
-
-# Run search
 if submitted:
 
     if home_query.strip():
@@ -74,3 +147,31 @@ if submitted:
         st.warning(
             "Please enter a keyword before searching."
         )
+
+
+st.divider()
+
+
+# -----------------------------
+# Navigation
+# -----------------------------
+
+st.subheader("Explore the database")
+
+st.page_link(
+    "pages/1_Literature.py",
+    label="Browse literature",
+    icon="🔎",
+)
+
+st.page_link(
+    "pages/2_Omics_Datasets.py",
+    label="Explore omics & datasets",
+    icon="🧬",
+)
+
+st.page_link(
+    "pages/3_Statistics.py",
+    label="View statistics",
+    icon="📊",
+)
