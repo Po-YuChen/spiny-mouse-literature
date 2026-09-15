@@ -84,15 +84,27 @@ def clear_home_search():
     st.session_state["home_search"] = ""
 
 
-# Search input + clear button
+# Clear button + search box
 search_row = st.columns(
-    [20, 0.65],
+    [0.65, 20],
     gap="small",
 )
 
 
-# Search box
+# Small clear button on the left
 with search_row[0]:
+
+    st.button(
+        "×",
+        key="home_clear",
+        help="Clear search",
+        on_click=clear_home_search,
+        use_container_width=True,
+    )
+
+
+# Search form
+with search_row[1]:
 
     with st.form(
         "home_search_form"
@@ -112,18 +124,6 @@ with search_row[0]:
             "Search",
             type="primary",
         )
-
-
-# Small clear button on the right
-with search_row[1]:
-
-    st.button(
-        "×",
-        key="home_clear",
-        help="Clear search",
-        on_click=clear_home_search,
-        use_container_width=True,
-    )
 
 
 # -----------------------------
