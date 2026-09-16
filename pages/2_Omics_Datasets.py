@@ -196,6 +196,18 @@ def dataset_popover_filter(
 
 
 # -----------------------------
+# Search state
+# -----------------------------
+
+if "dataset_search_query" not in st.session_state:
+    st.session_state["dataset_search_query"] = ""
+
+
+def clear_dataset_search():
+    st.session_state["dataset_search_query"] = ""
+
+
+# -----------------------------
 # Filters
 # -----------------------------
 
@@ -222,10 +234,35 @@ with c2:
 
 with c3:
 
-    q = st.text_input(
-        "Search accession or publication",
-        placeholder="e.g. GSE71761, kidney, regeneration",
+    st.markdown(
+        "**Search accession or publication title**"
     )
+
+    search_row = st.columns(
+        [0.38, 12],
+        gap=None,
+    )
+
+
+    with search_row[0]:
+
+        st.button(
+            "×",
+            key="dataset_search_clear",
+            help="Clear search",
+            on_click=clear_dataset_search,
+            use_container_width=True,
+        )
+
+
+    with search_row[1]:
+
+        q = st.text_input(
+            "Search accession or publication title",
+            placeholder="e.g. GSE71761 or title",
+            key="dataset_search_query",
+            label_visibility="collapsed",
+        )
 
 
 # -----------------------------
