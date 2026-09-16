@@ -179,18 +179,17 @@ def dataset_popover_filter(
 
 
     # Show currently selected options
-    if selected:
+  if selected:
 
-        st.caption(
-            "Selected: "
-            + ", ".join(selected)
-        )
+    st.caption(
+        ", ".join(selected)
+    )
 
-    else:
+else:
 
-        st.caption(
-            "Selected: None"
-        )
+    st.caption(
+        "None"
+    )
 
 
     return selected
