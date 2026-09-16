@@ -239,8 +239,8 @@ with c3:
     )
 
     search_row = st.columns(
-        [0.38, 12],
-        gap=None,
+        [1, 10],
+        gap="small",
     )
 
 
